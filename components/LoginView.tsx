@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
-import { Globe, Mail, Lock, ArrowRight, Hexagon, Shield } from 'lucide-react';
+import { Globe, Mail, Lock, ArrowRight, Hexagon } from 'lucide-react';
 import { Language } from '../types';
-import { loginWithGoogle, loginWithEmail, registerWithEmail, createUserProfile } from '../services/firebaseService';
+import { loginWithGoogle, loginWithEmail, registerWithEmail } from '../services/firebaseService';
 
 interface LoginViewProps {
   language: Language;
@@ -43,48 +44,6 @@ const LoginView: React.FC<LoginViewProps> = ({ language, setLanguage, onGuestLog
     } catch (e: any) {
         setLoading(false);
         alert(e.message || "Authentication failed");
-    }
-  };
-
-  const handleAdminSetup = async () => {
-    if (confirm(language === 'ar' ? 'هل تريد إنشاء/دخول حساب المدير؟ (admin@flex.com)' : 'Create/Login as Admin? (admin@flex.com)')) {
-        setLoading(true);
-        const adminEmail = 'admin@flex.com';
-        const adminPass = '123456';
-
-        try {
-          // 1. Try to Register
-          const result = await registerWithEmail(adminEmail, adminPass);
-          // 2. Setup Profile with OFFECAL ID
-          await createUserProfile(result.user.uid, {
-              name: 'General Manager',
-              id: 'OFFECAL',
-              isAdmin: true,
-              adminRole: 'super_admin',
-              vip: true,
-              vipLevel: 8,
-              avatar: 'https://cdn-icons-png.flaticon.com/512/2922/2922510.png',
-              bio: 'The Boss',
-              wallet: { diamonds: 10000000, coins: 10000000 }
-          });
-          // Reload to ensure context is fresh
-          window.location.reload();
-        } catch (error: any) {
-          if (error.code === 'auth/email-already-in-use') {
-             // If exists, just login
-             try {
-                 await loginWithEmail(adminEmail, adminPass);
-                 // Reload to ensure context is fresh
-                 window.location.reload();
-             } catch (e: any) {
-                 alert(language === 'ar' ? 'فشل الدخول: ' + e.message : 'Login failed: ' + e.message);
-                 setLoading(false);
-             }
-          } else {
-             alert(language === 'ar' ? 'فشل إنشاء الأدمن: ' + error.message : 'Admin creation failed: ' + error.message);
-             setLoading(false);
-          }
-        }
     }
   };
 
@@ -135,16 +94,6 @@ const LoginView: React.FC<LoginViewProps> = ({ language, setLanguage, onGuestLog
       >
         <Globe className="w-3 h-3 text-white" />
         <span>{t('langName')}</span>
-      </button>
-
-      {/* ADMIN SETUP BUTTON - Explicit and easy to find */}
-      <button 
-        onClick={handleAdminSetup}
-        className="absolute top-8 left-8 z-30 flex items-center gap-2 bg-red-600/80 hover:bg-red-500 backdrop-blur-md px-4 py-2 rounded-full text-white text-xs font-bold transition border border-red-400 shadow-xl animate-pulse"
-        title="Admin Quick Access"
-      >
-        <Shield className="w-4 h-4" />
-        {language === 'ar' ? 'دخول المدير' : 'Admin Login'}
       </button>
 
       {/* Main Content Container - Glassmorphism */}
